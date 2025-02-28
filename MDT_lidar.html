@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Marcos Rodrigues">
+
+<title>Creación de MDTs con LiDAR PNOA</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="MDT_lidar_files/libs/clipboard/clipboard.min.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/quarto.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/popper.min.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/anchor.min.js"></script>
+<link href="MDT_lidar_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="MDT_lidar_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="MDT_lidar_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="MDT_lidar_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="MDT_lidar_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Creación de MDTs con LiDAR PNOA</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Autor/a</div>
+    <div class="quarto-title-meta-contents">
+             <p>Marcos Rodrigues </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>A través de este tutorial aprenderéis cómo generar <strong>Modelos Digitales de Terreno (MDT)</strong> a partir de datos LiDAR. Procesaremos datos del programa LiDAR PNOA que puedes obtener del <a href="https://centrodedescargas.cnig.es/CentroDescargas/home">centro nacional de descargas</a> (CNIG). Veremos algunos de los aspectos básicos de la manipulación de datos LiDAR, es decir, acceder a los datos LiDAR, filtrarlos y producir capas raster a diferentes resoluciones espaciales.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Nota
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>NO cubriremos la clasificación LiDAR, sino que aprovecharemos la clasificación estándar ya disponible en los productos LiDAR PNOA. Para más información sobre este y otros aspectos puede consultar el manual del paquete <code>lidR</code>:</p>
+<p>https://r-lidar.github.io/lidRbook/</p>
+</div>
+</div>
+<div class="calloout-important">
+<p>A lo largo del documento te encontrarás con varios ejercicios que deberás resolver y entregar para la evaluación de esta asignatura.</p>
+</div>
+<section id="instalación-y-carga-de-las-paquetes-necesarios" class="level2">
+<h2 class="anchored" data-anchor-id="instalación-y-carga-de-las-paquetes-necesarios">Instalación y carga de las paquetes necesarios</h2>
+<p>El flujo de trabajo depende de una serie de paquetes que debemos descargar previamente usando <code>install.packages("paquete")</code>. La piedra angular del procedimiento radica en el paquete <code>'lidR'</code>, que contiene las funciones necesarias para manipular y procesar archivos tipo LiDAR. Usaremos varias bibliotecas auxiliares para realizar algunos cálculos específicos (<code>moments</code>) y procesar datos vectoriales y raster espaciales (<code>sf</code>, y <code>terra</code>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Instalar los paquetes</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("lidR")</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("terra")</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("moments")</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("sf")</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Cargar paquetes</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lidR)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'lidR' was built under R version 4.4.2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>terra 1.7.83</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Adjuntando el paquete: 'terra'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:lidR':
+
+    area, crs, crs&lt;-, is.empty, watershed</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.3.1; sf_use_s2() is TRUE</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Adjuntando el paquete: 'sf'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:lidR':
+
+    st_concave_hull</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(moments)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="acceso-a-datos-lidar-mediante-ficheros-.laz" class="level2">
+<h2 class="anchored" data-anchor-id="acceso-a-datos-lidar-mediante-ficheros-.laz">Acceso a datos LiDAR mediante ficheros <code>*.laz</code></h2>
+<p>Para cargar y acceder a una nube de puntos LiDAR procedente de un único fichero, utilizamos la función <code>readLAS()</code>. El único parámetro requerido es una cadena de texto con la ruta y el nombre del archivo con el que vamos a trabajar. Una vez que el archivo está cargado en RStudio, podemos inspeccionar el contenido utilizando:</p>
+<ul>
+<li><p><code>head()</code>: previsualización de los datos contenidos en el fichero.</p></li>
+<li><p><code>plot()</code>: visualización 3D de la nube de retornos.</p></li>
+</ul>
+<p>Usaremos algunas otras funciones para verificar la proyección espacial con <code>crs()</code>. En caso de obtener un CRS en blanco, necesitamos asignar el adecuado. Los datos espaciales de España deben estar proyectados en el sistema ETRS89 (UTM), utilizando el uso adecuado (<a href="#fig-usos" class="quarto-xref">Figura&nbsp;1</a>).</p>
+<div id="fig-usos" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-usos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="Husos_España.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-usos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;1: Distribución de husos en el CRS ETRS89
+</figcaption>
+</figure>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Redaing a LAS file</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">readLAS</span>(<span class="st">"D:/lidar_3/laz/PNOA_2010_LOTE1_ARA-NORTE_674-4610_ORT-CLA-CIR.laz"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(las<span class="sc">@</span>data)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          X       Y      Z   gpstime Intensity ReturnNumber NumberOfReturns
+      &lt;num&gt;   &lt;num&gt;  &lt;num&gt;     &lt;num&gt;     &lt;int&gt;        &lt;int&gt;           &lt;int&gt;
+1: 674000.2 4609702 237.67 -20357707       147            1               1
+2: 674000.3 4609702 237.64 -20357707       140            1               1
+3: 674000.3 4609701 237.68 -20357707       142            1               1
+4: 674000.3 4609701 237.65 -20357707       148            1               1
+5: 674000.4 4609701 237.70 -20357707       156            1               1
+6: 674000.4 4609701 237.67 -20357707       145            1               1
+   ScanDirectionFlag EdgeOfFlightline Classification Synthetic_flag
+               &lt;int&gt;            &lt;int&gt;          &lt;int&gt;         &lt;lgcl&gt;
+1:                 0                0             12          FALSE
+2:                 0                0             12          FALSE
+3:                 0                0             12          FALSE
+4:                 0                0             12          FALSE
+5:                 0                0             12          FALSE
+6:                 0                0             12          FALSE
+   Keypoint_flag Withheld_flag ScanAngleRank UserData PointSourceID     R     G
+          &lt;lgcl&gt;        &lt;lgcl&gt;         &lt;int&gt;    &lt;int&gt;         &lt;int&gt; &lt;int&gt; &lt;int&gt;
+1:         FALSE         FALSE           -22      244           773 40448 26368
+2:         FALSE         FALSE           -22      244           773 40192 26112
+3:         FALSE         FALSE           -22      244           773 39680 25600
+4:         FALSE         FALSE           -22      244           773 39424 25344
+5:         FALSE         FALSE           -22      244           773 39168 25088
+6:         FALSE         FALSE           -22      244           773 38656 24576
+       B
+   &lt;int&gt;
+1: 25344
+2: 25088
+3: 24576
+4: 24320
+5: 24064
+6: 23552</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(las,<span class="at">color=</span><span class="st">"RGB"</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Point cloud loaded"</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Point cloud loaded"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">epsg</span>(las)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 25830</code></pre>
+</div>
+</div>
+</section>
+<section id="filtrado-de-clases-de-retorno" class="level2">
+<h2 class="anchored" data-anchor-id="filtrado-de-clases-de-retorno">Filtrado de clases de retorno</h2>
+<p>Cada retorno (punto) en los archivos <strong>laz</strong> pertenece a una clase de cobertura terrestre. Estos datos han sido asignados mediante un proceso de clasificación por defecto que implica diferentes pasos que no cubriremos aquí. Baste decir que, a partir de esta clasificación, podemos diferenciar entre <em>2 y 8</em> = <em>suelo</em>, <em>3, 4 y 5</em> = vegetación y <em>6</em> = <em>Edificación</em> (<a href="#fig-clases" class="quarto-xref">Figura&nbsp;2</a>).</p>
+<div id="fig-clases" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-clases-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/clases_ASPRS.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-clases-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figura&nbsp;2: Clases definidas para la clasificación en el programa LiDAR-PNOA. Fuente: https://pnoa.ign.es/web/portal/pnoa-lidar/procesamiento-de-los-datos
+</figcaption>
+</figure>
+</div>
+<p>Podemos seleccionar las clases deseadas utilizando <code>filter_poi()</code>, pasando un vector de categorías con <code>%in%</code>. Una vez filtrados, podemos inspeccionar la nube de puntos resultante utilizando <code>plot()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Selección de las clases de vegetación, edificación y suelo</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las, Classification <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">8</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(las,<span class="at">color=</span><span class="st">"RGB"</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Ground and vegetation returns selected."</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Ground and vegetation returns selected."</code></pre>
+</div>
+</div>
+<p>A partir de aquí podemos empezar a generar modelos digitales de terreno a partir de los retornos adecuados.</p>
+</section>
+<section id="creación-de-un-modelo-digital-de-elevaciones-dem" class="level2">
+<h2 class="anchored" data-anchor-id="creación-de-un-modelo-digital-de-elevaciones-dem">Creación de un modelo digital de elevaciones (DEM)</h2>
+<p>El ejemplo más sencillo es crear un modelos digital de elevaciones o DEM. Los DEM son capas ráster cuyos píxeles almacenan la cota o altitud sobre el nivel de mar del suelo. Si queremos crear uno, basta con filtrar la nube de puntos para utilizar únicamente los retornos de suelo (clase 2) y llamar a la función <code>rasterize_terrain()</code> que pasa de retornos a pixeles. Podemos especificar el método de interpolación (IDW en el ejemplo) y la resolución espacial del píxel:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Seleccionar solo los retornos de suelo</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las, Classification <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">8</span>))</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>dem_idw <span class="ot">&lt;-</span> <span class="fu">rasterize_terrain</span>(las, <span class="at">algorithm =</span> <span class="fu">knnidw</span>(<span class="at">k =</span> <span class="dv">10</span>L, <span class="at">p =</span> <span class="dv">2</span>), <span class="at">res =</span> <span class="dv">5</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Interpolation of 53 points failed because they are too far from ground
+points. Nearest neighbour was used but interpolation is weak for those points</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(dem_idw)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="morfometría-del-terreno" class="level3">
+<h3 class="anchored" data-anchor-id="morfometría-del-terreno">Morfometría del terreno</h3>
+<p>Los MDT, como sabes, son representaciones digitales del terreno. Éstas incluyen no solo la elevación sino otras representaciones como la pendiente, la orientación o la acumulación del flujo. Vamos a ver cómo calcular algunos de ellos a partir de la funcion <code>terrain()</code> del paquete <code>terra</code>. Para más información puedes acudir a https://rdrr.io/cran/terra/man/terrain.html.</p>
+<section id="pendiente" class="level4">
+<h4 class="anchored" data-anchor-id="pendiente">Pendiente</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pendiente en ángulo</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>pendiente <span class="ot">&lt;-</span> <span class="fu">terrain</span>(dem_idw, <span class="at">v=</span><span class="st">"slope"</span>) </span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pendiente)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>::: {.callout-tip title=“Ejercicio 1”} ¿Cómo podriamos calcular la pendiente en porcentaje en lugar de en grados? :::</p>
+</section>
+<section id="orientación" class="level4">
+<h4 class="anchored" data-anchor-id="orientación">Orientación</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pendiente en ángulo</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>pendiente <span class="ot">&lt;-</span> <span class="fu">terrain</span>(dem_idw, <span class="at">v=</span><span class="st">"aspect"</span>) </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pendiente)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="topográfic-position-index-tpi" class="level4">
+<h4 class="anchored" data-anchor-id="topográfic-position-index-tpi">Topográfic position index (TPI)</h4>
+<p>El <strong>Índice de Posición Topográfica (TPI)</strong> es una métrica utilizada en análisis del terreno para cuantificar la diferencia de elevación de un punto con respecto a la elevación promedio de su entorno. Se emplea para clasificar el relieve en diferentes tipos de formas de terreno, como <strong>valles, laderas y cimas</strong>.</p>
+<p>La fórmula del TPI es:</p>
+<p><span class="math display">\[
+TPI = Z_{\text{punto}} - Z_{\text{promedio del entorno}}
+\]</span></p>
+<p>Donde:</p>
+<ul>
+<li>( Z_{} ) es la elevación del punto de interés.</li>
+<li>( Z_{} ) es la elevación media dentro de un radio determinado alrededor del punto.</li>
+</ul>
+<p>La interpretación del TPI sería:</p>
+<ul>
+<li><strong>TPI &gt; 0</strong> → El punto está <strong>por encima</strong> del promedio local (puede indicar una cima o una cresta).</li>
+<li><strong>TPI ≈ 0</strong> → El punto está <strong>al mismo nivel</strong> que el entorno (ladera uniforme o plano).</li>
+<li><strong>TPI &lt; 0</strong> → El punto está <strong>por debajo</strong> del promedio local (puede indicar un valle o depresión).</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pendiente en ángulo</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>pendiente <span class="ot">&lt;-</span> <span class="fu">terrain</span>(dem_idw, <span class="at">v=</span><span class="st">"TPI"</span>) </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pendiente)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="dirección-del-flujo-de-escorrentía" class="level4">
+<h4 class="anchored" data-anchor-id="dirección-del-flujo-de-escorrentía">Dirección del flujo de escorrentía</h4>
+<p>Dirección en grados respecto al norte hacia la que discurriría el flujo de escorrentía superficial en función del ángulo de inclinación del terreno.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pendiente en ángulo</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>pendiente <span class="ot">&lt;-</span> <span class="fu">terrain</span>(dem_idw, <span class="at">v=</span><span class="st">"flowdir"</span>) </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pendiente)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="modelo-digital-de-superficies-mds" class="level3">
+<h3 class="anchored" data-anchor-id="modelo-digital-de-superficies-mds">Modelo digital de superficies (MDS)</h3>
+<p>El MDS es muy similar al MDE en el sentido de que es también una capa ráster cuyos píxeles representan altitud o cota. La diferencia radica en que en el MDS también se tiene en cuenta los objetos presentes en el territorio (edificio, árbolado…). A efectos de cálculo el procedimiento es sencillo, es igual que el MDE pero en este caso retenos los retornos de las clases que representan los objetos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">readLAS</span>(<span class="st">"D:/lidar_3/laz/PNOA_2010_LOTE1_ARA-NORTE_674-4610_ORT-CLA-CIR.laz"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las, Classification <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">8</span>))</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>dsm_idw <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="fu">grid_metrics</span>(las, <span class="fu">max</span>(Z), <span class="at">res =</span> <span class="dv">5</span>))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(dsm_idw)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>En este caso hemos recurrido a la función <code>grid_metrics()</code> del paquete <code>rlidr</code>. Esta función permite calcular métricas personalizadas a partir de datos LiDAR dentro de una cuadrícula espacial definida por el usuario. Se aplica sobre una nube de puntos para generar un raster con valores derivados de las características de los puntos en cada celda.</p>
+<p>Parámetros:</p>
+<ul>
+<li><code>las</code>: Objeto de clase <code>LAS</code> o <code>LAScatalog</code>, que representa la nube de puntos LiDAR.</li>
+<li><code>func</code>: Función personalizada que se aplicará a los puntos dentro de cada celda de la cuadrícula (en el ejemplo se calcula el máximo).</li>
+<li><code>res</code>: Resolución espacial de la cuadrícula en metros (tamaño de cada celda del raster).</li>
+</ul>
+</section>
+<section id="modelo-digital-de-superficies-normalizado" class="level3">
+<h3 class="anchored" data-anchor-id="modelo-digital-de-superficies-normalizado">Modelo digital de superficies normalizado</h3>
+<p>El <strong>Modelo Digital de Superficies Normalizado (nDSM</strong>, por sus siglas en inglés: Normalized Digital Surface Model) representa la altura relativa de los objetos sobre el terreno. Se obtiene restando el Modelo Digital del Terreno (DTM) al Modelo Digital de Superficies (DSM):</p>
+<p>El <strong>nDSM</strong> muestra la altura real de los objetos con respecto al nivel del suelo. Sus valores pueden interpretarse de la siguiente manera:</p>
+<ul>
+<li><strong>Valores cercanos a 0</strong>: Representan el nivel del suelo.</li>
+<li><strong>Valores positivos</strong>: Indican la altura de elementos como edificios, árboles o infraestructura.</li>
+<li><strong>Valores negativos</strong>: Pueden deberse a errores en la interpolación o diferencias en la resolución de los modelos.</li>
+</ul>
+<section id="ndsm-como-diferencia-entre-dsm-y-dem" class="level4">
+<h4 class="anchored" data-anchor-id="ndsm-como-diferencia-entre-dsm-y-dem">nDSM como diferencia entre DSM y DEM</h4>
+<p>En esencia el nDSM es tan solo la diferencia entre el modelo de superficies y de elevaciones. Si tenemos capas ráster con esta información, como es el caso, basta con una operación de resta local para generar el nDSM:</p>
+<p><span class="math display">\[
+nDSM = DSM - DTM
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>ndsm <span class="ot">&lt;-</span> dsm_idw <span class="sc">-</span> dem_idw</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ndsm)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="normalización-de-la-nube-de-puntos" class="level4">
+<h4 class="anchored" data-anchor-id="normalización-de-la-nube-de-puntos">Normalización de la nube de puntos</h4>
+<p>Otra alterntiva, más precisa en realidad, es crear el modelo normalizado pero normalizando la nube de puntos LiDAR y generar posteriormente el nDSM mediante la función <code>grid_metrics()</code>. Vamos a ver un ejemplo aplicado para obtener la altura de la vegetación de manera similar a lo que habéis hecho en la asignatura de LiDAR. Lo primero es normalizar la nube de puntos LiDAR con <code>normalize_height()</code>. Esta función necesita objeto <code>las</code> que contenga retornos de suelo (clase 2) y otros retornos correspondiente a objetos sobre la superficie (vegetación 3, 4, y 5):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">readLAS</span>(<span class="st">"D:/lidar_3/laz/PNOA_2010_LOTE1_ARA-NORTE_674-4610_ORT-CLA-CIR.laz"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las, Classification <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>))</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>lasn <span class="ot">&lt;-</span> <span class="fu">normalize_height</span>(las, <span class="fu">knnidw</span>(<span class="at">k =</span> <span class="dv">8</span>, <span class="at">p =</span> <span class="dv">2</span>))</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Disponer de nube de puntos normalizados permite inspeccionar los valores para detectar objetos. Por ejemplo, todos los valores deberían ser positivos (&gt;0m) y en el caso de la vegetación tener una altura inferior a 30-35 metros. Primero vamos a inspeccionar los valores máximos y mínimos de la nube normalizada a ver si esto sucede:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(lasn<span class="sc">@</span>data<span class="sc">$</span>Z)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 32.449</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(lasn<span class="sc">@</span>data<span class="sc">$</span>Z)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -2.383</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Importante
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Estos errores proceden de la asiganción de coordenadas <em>xyz</em> a los retornos. Es relativamente frecuente que suceda.</p>
+</div>
+</div>
+<p>Parece que puede haber problemas así que vamos a retener solo los retornos de 0 a 30 metros. Después inspeccionamos los valores de nuevo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>las_filt <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(lasn, lasn<span class="sc">@</span>data<span class="sc">$</span>Z<span class="sc">&gt;=</span><span class="dv">0</span> <span class="sc">&amp;</span> lasn<span class="sc">@</span>data<span class="sc">$</span>Z<span class="sc">&lt;=</span><span class="dv">30</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(las_filt<span class="sc">@</span>data<span class="sc">$</span>Z)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 27.159</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(las_filt<span class="sc">@</span>data<span class="sc">$</span>Z)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+</div>
+<p>Una vez normalizada la nube ya podemos generar el nDSM. Vamos a usar una aproximación ligeramente distinta a la vista anteriormente y usaremos el percentil 95 en lugar del máximo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>f_p95 <span class="ot">=</span> <span class="cf">function</span>(x) {p95 <span class="ot">=</span> <span class="fu">quantile</span>(x, <span class="fl">0.95</span>)}</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>r_p95 <span class="ot">&lt;-</span> <span class="fu">grid_metrics</span>(las_filt, <span class="fu">f_p95</span>(Z), <span class="at">res =</span> <span class="dv">5</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(r_p95, <span class="at">main=</span><span class="st">"95th height percentile"</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Ejercicio 2">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Adapta el ejemplo anterior para obtener un nDSM con la altura de las edificaciones.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="cálculo-de-métricas-del-dosel-forestal" class="level3">
+<h3 class="anchored" data-anchor-id="cálculo-de-métricas-del-dosel-forestal">Cálculo de métricas del dosel forestal</h3>
+<p>Por último, antes de ver cómo podemos utilizar R para el procesado masivo de nubes de puntos LiDAR, vamos a calcular algunas de las métricas del dosel forestal que habréis visto en el bloque dedicado a los sensores LiDAR en la asignatura 60403 sobre Teledetección.</p>
+<p>Para estos cálculos vamos a utilizar todo lo visto anteriormente relativo al filtrado de clases (<code>filter_poi()</code>), la noramlización de alturas (<code>normalize_height()</code>) y la aplicación de funciones específicas sobre la nube de puntos (<code>grid_metrics()</code>).</p>
+<section id="altura-del-dosel-arbóreo" class="level4">
+<h4 class="anchored" data-anchor-id="altura-del-dosel-arbóreo">Altura del dosel arbóreo</h4>
+<p>Este cálculo es similar a la creación del nDSM. Hay no obstante algunos matices:</p>
+<ul>
+<li>Como nos vamos a centrar en vegetación arbórea podemos retener solo las clases 4 y 5.</li>
+<li>Para distinguir el arbolado se suele aplicar un umbral de altura normalizada, por ejemplo, más de 4 metros de altura.</li>
+<li>En este caso, vamos a aplicar el límite superior altura de 30 metros. No suele haber árboles tan altos en España y en algún caso puede haber retornos con esa altura (ej. tendidos eléctricos mal clasificados).</li>
+<li>La función que vamos a aplicar el el percentil 95, no usaremos el máximo.</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">readLAS</span>(<span class="st">"D:/lidar_3/laz/PNOA_2010_LOTE1_ARA-NORTE_674-4610_ORT-CLA-CIR.laz"</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>las <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las, Classification <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">5</span>))</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>lasn <span class="ot">&lt;-</span> <span class="fu">normalize_height</span>(las, <span class="fu">knnidw</span>(<span class="at">k =</span> <span class="dv">8</span>, <span class="at">p =</span> <span class="dv">2</span>))</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>las_filt <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(lasn, lasn<span class="sc">@</span>data<span class="sc">$</span>Z<span class="sc">&gt;=</span><span class="dv">0</span> <span class="sc">&amp;</span> lasn<span class="sc">@</span>data<span class="sc">$</span>Z<span class="sc">&lt;=</span><span class="dv">30</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Importante
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Recuerda que para poder hacer la normalización de la nube de puntos <strong>siempre tenemos que incluir la clase de suelo</strong> en el filtrado con <code>filter_poi()</code>.</p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>f_p95 <span class="ot">=</span> <span class="cf">function</span>(x) {p95 <span class="ot">=</span> <span class="fu">quantile</span>(x, <span class="fl">0.95</span>)}</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>altura.arb <span class="ot">&lt;-</span> <span class="fu">grid_metrics</span>(las_filt, <span class="fu">f_p95</span>(Z), <span class="at">res =</span> <span class="dv">5</span>)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(altura.arb, <span class="at">main=</span><span class="st">"Altura del arbolado"</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Ejercicio 3">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Adapta el ejemplo anterior para obtener la altura del arbolado a diferentes resoluciones (1, 2 y 5 metros). Exporta los resultados a un ráster en formato <em>.tif</em> (<code>writeRaster()</code>) y comparalos en un SIG.</p>
+</div>
+</div>
+</section>
+<section id="recubrimiento-del-dosel-o-factor-de-cabida-cubierta-fcc" class="level4">
+<h4 class="anchored" data-anchor-id="recubrimiento-del-dosel-o-factor-de-cabida-cubierta-fcc">Recubrimiento del dosel o factor de cabida cubierta (FCC)</h4>
+<p>Esta métrica es algo más compleja. Básicamente los que vamos a calcular es la proporción de retornos clasificados como vegetación con una altura de 4 metros o superior, respecto a la proporción tal de retornos incluyendo también la clase de suelo. En este caso hay además un matiz importante y es que ahora <strong>solo vamos a usar los primeros retornos</strong>, es decir, aquellos que impactan primero con objetos o el suelo. Teniendo esto en cuenta, lo que realmente calculamos es la proporción de retornos que tocan la parte superior del arbolado respecto a los que llegan al suelo.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Selection of returns above 4 meter height and all vegetation returns</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>filt_FCC1 <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las_filt, las_filt<span class="sc">@</span>data<span class="sc">$</span>ReturnNumber<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> las_filt<span class="sc">@</span>data<span class="sc">$</span>Z<span class="sc">&gt;</span><span class="dv">4</span>)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>filt_FCC2 <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las_filt, las_filt<span class="sc">@</span>data<span class="sc">$</span>ReturnNumber<span class="sc">==</span><span class="dv">1</span> )</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>f_FCC <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {FCC1<span class="ot">=</span>(<span class="fu">length</span>(x))}</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>r_FCC1 <span class="ot">&lt;-</span> <span class="fu">grid_metrics</span>(filt_FCC1,<span class="fu">f_FCC</span>(Z),<span class="at">res=</span><span class="dv">5</span>)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>r_FCC2 <span class="ot">&lt;-</span> <span class="fu">grid_metrics</span>(filt_FCC2,<span class="fu">f_FCC</span>(Z),<span class="at">res=</span><span class="dv">5</span>)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="co"># CCCF</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>r_FCC <span class="ot">&lt;-</span> (r_FCC1<span class="sc">/</span>r_FCC2)<span class="sc">*</span><span class="dv">100</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in r_FCC1/r_FCC2: Raster objects have different extents. Result for
+their intersection is returned</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(r_FCC, <span class="at">main=</span><span class="st">"FCC"</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="procesamiento-masivo-de-nubes-de-puntos-lidar" class="level2">
+<h2 class="anchored" data-anchor-id="procesamiento-masivo-de-nubes-de-puntos-lidar">Procesamiento masivo de nubes de puntos LiDAR</h2>
+<p>Hasta ahora hemos trabajado con una única nube de puntos, correspondiente a una de las teselas de 2x2Km que suministra en CNIG. Pero, ¿y si queremos trabajar una zona más amplia? Para poder analizar una región de mayor extensión que comprende varias teselas tenemos 2 opciones:</p>
+<ol type="1">
+<li>Crear un <code>LASCatalog</code> para trabajr como hasta hora, es decir, usando una única nube de puntos.</li>
+<li>Implmentar una rutina de procesamiento iterativo (bucle) y unir los resultados.</li>
+</ol>
+<p>Ambas tienen ventajas e inconvenientes. La primera opción es sin duda la más recomendable, pero si la región es muy amplia podemos tener dificulades para procesar toda al información. Esto dependerá de las características del equipo que estemos utilizando. La segunda requiere menos capacidad de procesamiento, pero dependiendo de las características de las nubes de puntos puede haber efectos borde en algunos casos.</p>
+<section id="creación-de-un-lascatalog" class="level3">
+<h3 class="anchored" data-anchor-id="creación-de-un-lascatalog">Creación de un <code>LASCatalog</code></h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>ctg <span class="ot">&lt;-</span> <span class="fu">readLAScatalog</span>(<span class="st">"D:/lidar_3/laz/"</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ctg)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>dtm <span class="ot">&lt;-</span> <span class="fu">rasterize_terrain</span>(ctg, <span class="fu">knnidw</span>(<span class="at">k =</span> <span class="dv">10</span>L, <span class="at">p =</span> <span class="dv">2</span>), <span class="at">res =</span> <span class="dv">20</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(dtm)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Podemos proceder a implementar tareas como la normalización de la nube de puntos de manera similar a lo visto anteriormente con la salvedad que ahora necesitamos especificar una directorio temporal para los cálculos</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">opt_output_files</span>(ctg) <span class="ot">&lt;-</span>  <span class="fu">paste0</span>(<span class="fu">tempdir</span>(), <span class="st">"/{*}_norm"</span>) <span class="co">#directorio temporal</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>ctg_norm <span class="ot">&lt;-</span> <span class="fu">normalize_height</span>(ctg, dtm)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>hmean <span class="ot">&lt;-</span> <span class="fu">pixel_metrics</span>(ctg_norm, <span class="sc">~</span><span class="fu">mean</span>(Z), <span class="dv">10</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hmean)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">opt_output_files</span>(ctg) <span class="ot">&lt;-</span>  <span class="fu">paste0</span>(<span class="fu">tempdir</span>(), <span class="st">"/{*}_norm"</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>lasn <span class="ot">&lt;-</span> <span class="fu">normalize_height</span>(ctg, <span class="fu">knnidw</span>(<span class="at">k =</span> <span class="dv">8</span>, <span class="at">p =</span> <span class="dv">2</span>))</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="procesamiento-iterativo" class="level3">
+<h3 class="anchored" data-anchor-id="procesamiento-iterativo">Procesamiento iterativo</h3>
+<p>Los cálculos basados en <code>LASCatalog</code> son más robustos, pero es más que posible que nuestro equipo no tenga capacidad para levantar procesamientos masivos. La alternativa es procesar cada tesela de manera individual, creando un ráster para cada tesela y posteriormente unir los rasters en uno completo para todo el área de estudio.</p>
+<p>Este proceso lo vamos a hacer en 2 etapas: 1. Vamos a procesar las teselas una a una, calculando las métricas o MDTs que necesitemos. 2. Vamos a unir las teselas ráster en una única capa.</p>
+<p>Comenzamos por procesar iterativamente cada fichero <code>laz</code> en la carpeta donde hemos extraido la información.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Importante
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Es necesario crear un directorio <code>results</code> para guardar los ráster de cada tesela.</p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># List of laz (las) files</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>listaLAS <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"D:/lidar_3/laz"</span>,</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">pattern =</span> <span class="st">"*CIR*"</span>,</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">full.names =</span> T)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a><span class="co"># List of names without path</span></span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>names <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"D:/lidar_3/laz"</span>,</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">pattern =</span> <span class="st">"*CIR*"</span>,</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">full.names =</span> F)</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a><span class="co"># file names   </span></span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>names <span class="ot">&lt;-</span> <span class="fu">substr</span>(names,<span class="dv">1</span>,<span class="fu">nchar</span>(names)<span class="sc">-</span><span class="dv">4</span>)</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a><span class="co"># output folder (remember to create it before running the code)</span></span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>out.dir <span class="ot">&lt;-</span> <span class="st">"D:/lidar_3/results/"</span></span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Looping through lasz tiles</span></span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(listaLAS)) {</span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Read single laz</span></span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>  las <span class="ot">&lt;-</span> <span class="fu">readLAS</span>(listaLAS[i])</span>
+<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter ground and building returns</span></span>
+<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>  las <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(las, Classification <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">6</span>,<span class="dv">8</span>))</span>
+<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Normalizing the point cloud</span></span>
+<span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a>  lasn <span class="ot">&lt;-</span> <span class="fu">normalize_height</span>(las, <span class="fu">knnidw</span>(<span class="at">k =</span> <span class="dv">8</span>, <span class="at">p =</span> <span class="dv">2</span>))</span>
+<span id="cb51-27"><a href="#cb51-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-28"><a href="#cb51-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Cleansing outliers</span></span>
+<span id="cb51-29"><a href="#cb51-29" aria-hidden="true" tabindex="-1"></a>  las_filt <span class="ot">&lt;-</span> <span class="fu">filter_poi</span>(lasn, lasn<span class="sc">@</span>data<span class="sc">$</span>Z<span class="sc">&gt;=</span><span class="dv">0</span> <span class="sc">&amp;</span> lasn<span class="sc">@</span>data<span class="sc">$</span>Z<span class="sc">&lt;=</span><span class="dv">150</span>)</span>
+<span id="cb51-30"><a href="#cb51-30" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-31"><a href="#cb51-31" aria-hidden="true" tabindex="-1"></a>  <span class="do">#####################################################################</span></span>
+<span id="cb51-32"><a href="#cb51-32" aria-hidden="true" tabindex="-1"></a>  <span class="do">########## CALCULATIN METRICS ###############</span></span>
+<span id="cb51-33"><a href="#cb51-33" aria-hidden="true" tabindex="-1"></a>  <span class="do">#####################################################################</span></span>
+<span id="cb51-34"><a href="#cb51-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-35"><a href="#cb51-35" aria-hidden="true" tabindex="-1"></a>  r_p95 <span class="ot">&lt;-</span> <span class="fu">grid_metrics</span>(las_filt, <span class="fu">f_p95</span>(Z), <span class="at">res =</span> <span class="dv">5</span>)</span>
+<span id="cb51-36"><a href="#cb51-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">writeRaster</span>(r_p95,<span class="fu">paste0</span>(out.dir,names[i],<span class="st">"edif_altura.tif"</span>), <span class="at">overwrite=</span><span class="cn">TRUE</span>)</span>
+<span id="cb51-37"><a href="#cb51-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-38"><a href="#cb51-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste0</span>(i,<span class="st">"/"</span>,<span class="fu">length</span>(listaLAS)))</span>
+<span id="cb51-39"><a href="#cb51-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb51-40"><a href="#cb51-40" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Una vez tenemos todos los raster procesados los unimos en una única capa.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Importante
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Recuerda crear una carpeta <code>mosaic</code> dentro de <code>results</code> para guardar el ráster completo.</p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># List with the metrics to merge. This must match the sufix we used in the previous step.</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>met <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"edif_altura"</span>)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading and merging</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (z <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(met)) {</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  files_rast<span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> out.dir, </span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>                            <span class="at">pattern =</span><span class="fu">paste0</span>(met[z],<span class="st">".tif$"</span>), </span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>  metList <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (y <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(files_raster)) {</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>    metList[[y]] <span class="ot">&lt;-</span> <span class="fu">rast</span>(files_raster[y])</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>  } </span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Cargar y mosaicar los rásters</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>  metRas<span class="fl">.1</span> <span class="ot">&lt;-</span> metList[[<span class="dv">1</span>]]</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>  metRas<span class="fl">.2</span> <span class="ot">&lt;-</span> metList[[<span class="dv">2</span>]]</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>  met.mos<span class="ot">&lt;-</span> <span class="fu">mosaic</span>(metRas<span class="fl">.1</span>,metRas<span class="fl">.2</span>,<span class="at">fun=</span>mean)</span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (y <span class="cf">in</span> <span class="dv">3</span><span class="sc">:</span><span class="fu">length</span>(metList)){</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>    met.iter <span class="ot">&lt;-</span> metList[[y]]</span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>    met.mos <span class="ot">&lt;-</span> <span class="fu">mosaic</span>(met.iter,met.mos,<span class="at">fun=</span>mean)</span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a>  met.mos[<span class="sc">!</span><span class="fu">is.finite</span>(met.mos)] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">writeRaster</span>(met.mos,<span class="fu">paste0</span>(<span class="st">"D:/lidar_3/results/mosaic/"</span>, met[z],<span class="st">".tif"</span>),<span class="at">overwrite=</span>T)</span>
+<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="asignación-a-entidades-vectoriales" class="level3">
+<h3 class="anchored" data-anchor-id="asignación-a-entidades-vectoriales">Asignación a entidades vectoriales</h3>
+<p>Lo último que vamos a ver es la asignación de los datos creados a partir de las nubes de puntos a un fichero vectorial que facilite la cartografía y la comparación de resultados.</p>
+<p>Vamos a usar una capa vectorial con la delimitación de las manzanas de la ciudad de Zaragoza obtenida de IDEZar el geoportal del ayuntamiento de Zaragoza (https://www.zaragoza.es/sede/portal/idezar/).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>manzanas <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="st">'D:/lidar_3/Manzanas/Manzanas.shp'</span>)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>manzanas.altura <span class="ot">&lt;-</span> <span class="fu">extract</span>(<span class="fu">rast</span>(fichero_mosaico), manzanas, <span class="at">fun=</span><span class="st">'max'</span>)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>manzanas<span class="sc">$</span>altura <span class="ot">&lt;-</span> manzanas.altura<span class="sc">$</span>valor_altura</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> manzanas, <span class="fu">aes</span>(<span class="at">fill=</span>altura)) <span class="sc">+</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">color=</span><span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>()</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Ejercicio 4">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ejercicio 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>El objetivo de este ejercicio es analizar los cambios en la edificación en la ciudad de Zaragoza. Para ello vamos a comparar la altura de las edificaciones en 2 fechas utilizando datos LiDAR.</p>
+<p>Replica la extracción de altura de edificios utilizando la 1ª o 2ª cobertura LiDAR-PNOA.</p>
+<p>Extrae la altura en otro campo en la capa de manzanas de manera que tengas un campo para la altura en la 3ª cobertura (2023) y otro con altura en un momento anterior (1ª/2ª cobertura, 2010-2016).</p>
+<p>Crea una cartografía que muestre los cambios en la edificación (diferencia entre campos con altura, 2023-20XX). Los valores positivos indicarán nuevas edificaciones y los negativos desaparicion de edificios existentes.</p>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copiado");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copiado");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

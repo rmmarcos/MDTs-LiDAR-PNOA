@@ -58,6 +58,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
+<<<<<<< HEAD
 <script src="index_files/libs/clipboard/clipboard.min.js"></script>
 <script src="index_files/libs/quarto-html/quarto.js"></script>
 <script src="index_files/libs/quarto-html/popper.min.js"></script>
@@ -68,6 +69,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="index_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+=======
+<script src="MDT_lidar_files/libs/clipboard/clipboard.min.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/quarto.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/popper.min.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="MDT_lidar_files/libs/quarto-html/anchor.min.js"></script>
+<link href="MDT_lidar_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="MDT_lidar_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="MDT_lidar_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="MDT_lidar_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="MDT_lidar_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -132,6 +145,7 @@ window.Quarto = {
 </header>
 
 
+<<<<<<< HEAD
 <div class="callout callout-style-default callout-important callout-titled" title="Sobre estos materiales">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -162,20 +176,30 @@ Sobre estos materiales
 <p>A través de este tutorial aprenderéis cómo generar <strong>Modelos Digitales de Terreno (MDT)</strong> a partir de datos LiDAR. Procesaremos datos del programa LiDAR PNOA que puedes obtener del <a href="https://centrodedescargas.cnig.es/CentroDescargas/home">centro nacional de descargas</a> (CNIG). Veremos algunos de los aspectos básicos de la manipulación de datos LiDAR, es decir, acceder a los datos LiDAR, filtrarlos y producir capas raster a diferentes resoluciones espaciales.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+=======
+<p>A través de este tutorial aprenderéis cómo generar <strong>Modelos Digitales de Terreno (MDT)</strong> a partir de datos LiDAR. Procesaremos datos del programa LiDAR PNOA que puedes obtener del <a href="https://centrodedescargas.cnig.es/CentroDescargas/home">centro nacional de descargas</a> (CNIG). Veremos algunos de los aspectos básicos de la manipulación de datos LiDAR, es decir, acceder a los datos LiDAR, filtrarlos y producir capas raster a diferentes resoluciones espaciales.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
 Nota
 </div>
+<<<<<<< HEAD
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
+=======
+</div>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 <div class="callout-body-container callout-body">
 <p>NO cubriremos la clasificación LiDAR, sino que aprovecharemos la clasificación estándar ya disponible en los productos LiDAR PNOA. Para más información sobre este y otros aspectos puede consultar el manual del paquete <code>lidR</code>:</p>
 <p>https://r-lidar.github.io/lidRbook/</p>
 </div>
 </div>
+<<<<<<< HEAD
 </div>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -190,6 +214,11 @@ Importante
 <p>A lo largo del documento te encontrarás con varios ejercicios que deberás resolver y entregar para la evaluación de esta asignatura.</p>
 </div>
 </div>
+=======
+<div class="calloout-important">
+<p>A lo largo del documento te encontrarás con varios ejercicios que deberás resolver y entregar para la evaluación de esta asignatura.</p>
+</div>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 <section id="instalación-y-carga-de-las-paquetes-necesarios" class="level2">
 <h2 class="anchored" data-anchor-id="instalación-y-carga-de-las-paquetes-necesarios">Instalación y carga de las paquetes necesarios</h2>
 <p>El flujo de trabajo depende de una serie de paquetes que debemos descargar previamente usando <code>install.packages("paquete")</code>. La piedra angular del procedimiento radica en el paquete <code>'lidR'</code>, que contiene las funciones necesarias para manipular y procesar archivos tipo LiDAR. Usaremos varias bibliotecas auxiliares para realizar algunos cálculos específicos (<code>moments</code>) y procesar datos vectoriales y raster espaciales (<code>sf</code>, y <code>terra</code>).</p>
@@ -342,7 +371,11 @@ points. Nearest neighbour was used but interpolation is weak for those points</c
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -360,7 +393,11 @@ points. Nearest neighbour was used but interpolation is weak for those points</c
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -376,7 +413,11 @@ points. Nearest neighbour was used but interpolation is weak for those points</c
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -407,7 +448,11 @@ TPI = Z_{\text{punto}} - Z_{\text{promedio del entorno}}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -423,7 +468,11 @@ TPI = Z_{\text{punto}} - Z_{\text{promedio del entorno}}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -442,7 +491,11 @@ TPI = Z_{\text{punto}} - Z_{\text{promedio del entorno}}
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -476,7 +529,11 @@ nDSM = DSM - DTM
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -536,7 +593,11 @@ Importante
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -596,7 +657,11 @@ Importante
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -637,7 +702,11 @@ their intersection is returned</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -661,7 +730,11 @@ their intersection is returned</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
+<<<<<<< HEAD
 <p><img src="index_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+=======
+<p><img src="MDT_lidar_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e
 </figure>
 </div>
 </div>
@@ -1253,4 +1326,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
+<<<<<<< HEAD
 </body></html>
+=======
+</body></html>
+>>>>>>> af3a7469e9a8c61dac83c6557376dae6a19e224e

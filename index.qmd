@@ -128,7 +128,8 @@ plot(pendiente)
 
 ```
 
-::: {.callout-tip title="Ejercicio 1"} ¿Cómo podriamos calcular la pendiente en porcentaje en lugar de en grados? :::
+::: {.callout-tip title="Ejercicio 1"} ¿Cómo podriamos calcular la pendiente en porcentaje en lugar de en grados? 
+:::
 
 #### Orientación
 
